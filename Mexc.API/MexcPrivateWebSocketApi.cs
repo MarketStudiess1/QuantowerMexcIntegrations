@@ -1,5 +1,4 @@
-﻿// Copyright [Your Name] © 2025.
-
+﻿
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -61,7 +60,7 @@ internal class MexcPrivateWebSocketApi : MexcWebSocketApi, IMexcPrivateWebSocket
                     Status = data["status"].ToString(),
                     Type = data["type"].ToString(),
                     Side = data["side"].ToString(),
-                    Time = data["transactTime"].Value<long>()
+                    Time = DateTimeOffset.FromUnixTimeMilliseconds(data["transactTime"].Value<long>())
                 };
                 OnNewData(new MexcEventArgs { OrderUpdate = order });
                 break;
@@ -69,14 +68,14 @@ internal class MexcPrivateWebSocketApi : MexcWebSocketApi, IMexcPrivateWebSocket
             case "private.account.trade@private":
                 var trade = new MexcUserTrade
                 {
-                    Id = data["tradeId"].Value<long>(),
                     Pair = data["symbol"].ToString(),
-                    OrderId = data["orderId"].Value<long>(),
+                    Id = data["tradeId"].Value<long>(),
+                    OrderId = data["orderId"].ToString(), // Changed from .Value<long>()
                     Amount = data["qty"].Value<decimal>(),
                     Price = data["price"].Value<decimal>(),
                     Fee = data["commission"].Value<decimal>(),
                     FeeCurrency = data["commissionAsset"].ToString(),
-                    ExecutionTime = data["transactTime"].Value<long>()
+                    ExecutionTime = DateTimeOffset.FromUnixTimeMilliseconds(data["transactTime"].Value<long>())
                 };
                 OnNewData(new MexcEventArgs { UserTrade = trade });
                 break;

@@ -38,15 +38,15 @@ public class MexcVendor : Vendor
         VendorDescription = loc._("Market data and trading for MEXC"),
         GetDefaultConnections = () => new List<ConnectionInfo>
         {
-            CreateDefaultConnectionInfo("MEXC", VENDOR_NAME, "MexcVendor\\MEXC.png", links: new List<ConnectionInfoLink>
+            CreateDefaultConnectionInfo("MEXC", VENDOR_NAME, "MexcVendor\\MEXC.png", new List<ConnectionInfoLink>
             {
                 new() { Title = "Register account", Url = "https://www.mexc.com/register" }
-            }
+            })
         },
         GetConnectionParameters = () =>
         {
             var infoItem = new SelectItem(CONNECTION_INFO, CONNECTION_INFO);
-            var tradingItem = new SelectItem(CONNECTION_TRADING_ITEM, CONNECTION_TRADING);
+            var tradingItem = new SelectItem(CONNECTION_TRADING, CONNECTION_TRADING);
 
             var relation = new SettingItemRelationEnability(CONNECTION, tradingItem);
 
@@ -54,13 +54,13 @@ public class MexcVendor : Vendor
             {
                 new SettingItemGroup(LOGIN_PARAMETER_GROUP, new List<SettingItem>
                 {
-                    new SettingItemRadioLocalized(CONNECTION_TYPE, infoItem, new List<SelectItem> { infoItem, tradingItem }),
-                    new SettingItemPassword(PARAMETER_API_KEY, new PasswordHolder)
+                    new SettingItemRadioLocalized(CONNECTION, infoItem, new List<SelectItem> { infoItem, tradingItem }),
+                    new SettingItemPassword(PARAMETER_API_KEY, new PasswordHolder())
                     {
                         Text = loc._("API key"),
                         Relation = relation
                     },
-                    new SettingItemPassword(PARAMETER_SECRET_KEY, new PasswordHolder)
+                    new SettingItemPassword(PARAMETER_SECRET_KEY, new PasswordHolder())
                     {
                         Text = loc._("Secret key"),
                         Relation = relation
@@ -68,9 +68,11 @@ public class MexcVendor : Vendor
                 })
             };
         }
+    };
+
     #endregion Integration details
 
-        #region Properties
+    #region Properties
 
     private Vendor vendor;
 
@@ -80,11 +82,11 @@ public class MexcVendor : Vendor
 
     public override ConnectionResult Connect(ConnectRequestParameters parameters)
     {
-        if (!NetworkInterface.GetIsNetwork())
-            return ConnectionResult.CreateFail(loc._("Network does not available"));
+        if (!NetworkInterface.GetIsNetworkAvailable())
+            return ConnectionResult.CreateFail(loc._("Network is not available"));
 
         var settingItem = parameters.ConnectionSettings.GetItemByPath(LOGIN_PARAMETER_GROUP, CONNECTION);
-        if (settingItem is not { Value: SelectItem })
+        if (settingItem is not { Value: SelectItem selectItem })
             return ConnectionResult.CreateFail("Cannot find connection parameters");
 
         this.vendor = selectItem.Value.ToString() == CONNECTION_INFO
@@ -102,7 +104,7 @@ public class MexcVendor : Vendor
 
     public override PingResult Ping() => this.vendor.Ping();
 
-    #endregion
+    #endregion Connection
 
     #region Accounts and rules
 
@@ -114,7 +116,7 @@ public class MexcVendor : Vendor
 
     public override IList<MessageAccountOperation> GetAccountOperations(CancellationToken token) => this.vendor.GetAccountOperations(token);
 
-    #endregion
+    #endregion Accounts and rules
 
     #region Symbols and symbol groups
 
@@ -126,7 +128,7 @@ public class MexcVendor : Vendor
 
     public override IList<MessageExchange> GetExchanges(CancellationToken token) => this.vendor.GetExchanges(token);
 
-    #endregion
+    #endregion Symbols and symbol groups
 
     #region Subscriptions
 

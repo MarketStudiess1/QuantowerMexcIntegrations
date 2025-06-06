@@ -1,7 +1,7 @@
-﻿// Copyright [Your Name] © 2025.
-
+﻿
 using System;
 using System.Collections.Generic;
+using System.Linq; // Added for Select
 using System.Threading;
 using Mexc.API.Abstractions;
 using Mexc.API.Models;
@@ -102,7 +102,7 @@ internal class MexcPublicWebSocketApi : MexcWebSocketApi, IMexcPublicWebSocketAp
                 {
                     Pair = data["symbol"].ToString(),
                     Id = data["tradeId"].Value<long>(),
-                    Timestamp = data["tradeTime"].Value<long>(),
+                    Time = data["tradeTime"].Value<long>(),
                     Price = data["price"].Value<decimal>(),
                     Amount = data["qty"].Value<decimal>()
                 };
@@ -113,18 +113,18 @@ internal class MexcPublicWebSocketApi : MexcWebSocketApi, IMexcPublicWebSocketAp
                 var book = new MexcOrderBook
                 {
                     Pair = data["symbol"].ToString(),
-                    Bids = data["bids"].Select(b => new MexcBookItem
+                    Bids = data["bids"].Select(b => new MexcOrderBookEntry
                     {
                         Price = b[0].Value<decimal>(),
-                        Amount = b[1].Value<decimal>()
-                    }).ToList(),
-                    Asks = data["asks"].Select(a => new MexcBookItem
+                        Quantity = b[1].Value<decimal>()
+                    }).ToArray(),
+                    Asks = data["asks"].Select(a => new MexcOrderBookEntry
                     {
                         Price = a[0].Value<decimal>(),
-                        Amount = a[1].Value<decimal>()
-                    }).ToList()
+                        Quantity = a[1].Value<decimal>()
+                    }).ToArray()
                 };
-                OnNewData(new MexcEventArgs { Book = book });
+                OnNewData(new MexcEventArgs { OrderBook = book }); // Changed from Book to OrderBook
                 break;
         }
     }

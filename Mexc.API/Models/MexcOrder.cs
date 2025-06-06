@@ -8,16 +8,16 @@ namespace Mexc.API.Models;
 /// </summary>
 public class MexcOrder
 {
-    public string Symbol { get; set; } // Trading pair, e.g., "BTCUSDT"
-    public string OrderId { get; set; } // Unique order identifier
-    public string ClientOrderId { get; set; } // Client-specified order ID
-    public decimal Price { get; set; } // Order price
-    public decimal OrigQuantity { get; set; } // Original order quantity
-    public decimal ExecutedQuantity { get; set; } // Executed quantity
-    public string Status { get; set; } // Order status (e.g., "NEW", "FILLED")
-    public string TimeInForce { get; set; } // Time in force (e.g., "GTC")
-    public string Type { get; set; } // Order type (e.g., "LIMIT", "MARKET")
-    public string Side { get; set; } // Order side (e.g., "BUY", "SELL")
-    public DateTimeOffset Time { get; set; } // Order creation time
-    public DateTimeOffset UpdateTime { get; set; } // Order update time
+    public string Symbol { get; internal set; } // Trading pair, e.g., "BTCUSDT"
+    public string OrderId { get; internal set; } // Unique order identifier
+    public string ClientOrderId { get; internal set; } // Client-specified order ID
+    public decimal Price { get; internal set; } // Order price
+    public decimal Quantity { get; internal set; } // Original order quantity (origQty)
+    public decimal ExecutedQty { get; internal set; } // Executed quantity
+    public string Status { get; internal set; } // Order status (e.g., "NEW", "FILLED")
+    public string Type { get; internal set; } // Order type (e.g., "LIMIT", "MARKET")
+    public string Side { get; internal set; } // Order side (e.g., "BUY", "SELL")
+    public DateTimeOffset Time { get; internal set; } // Order creation time (transactTime)
+
+    public override string ToString() => $"{this.Symbol} | {this.OrderId} | {this.Type} | {this.Side} | {this.Status}";
 }

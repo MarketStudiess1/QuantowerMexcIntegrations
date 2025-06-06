@@ -1,23 +1,22 @@
-﻿
-using System;
+﻿using System;
 
 namespace Mexc.API.Models;
 
 /// <summary>
-/// Represents a user's trade from MEXC API.
+/// Represents a user trade from MEXC API.
 /// </summary>
 public class MexcUserTrade
 {
-    public string Symbol { get; internal set; } // Trading pair
+    public string Pair { get; internal set; } // Trading pair, e.g., "BTCUSDT"
     public long Id { get; internal set; } // Trade ID
     public string OrderId { get; internal set; } // Order ID
     public decimal Price { get; internal set; } // Trade price
-    public decimal Quantity { get; internal set; } // Trade quantity
-    public decimal Fee { get; internal set; } // Trade fee
-    public string FeeAsset { get; internal set; } // Fee asset
-    public DateTimeOffset Time { get; internal set; } // Trade time
-    public bool IsBuyer { get; internal set; } // True if user is buyer
-    public bool IsMaker { get; internal set; } // True if user is maker
+    public decimal Amount { get; internal set; } // Trade quantity (qty)
+    public decimal Fee { get; internal set; } // Commission fee
+    public string FeeCurrency { get; internal set; } // Commission asset
+    public DateTimeOffset ExecutionTime { get; internal set; } // Trade execution time
+    public bool IsBuyer { get; internal set; } // True if buyer
+    public bool IsMaker { get; internal set; } // True if maker
 
-    public override string ToString() => $"{this.Symbol} | {this.Id} | {this.Price} | {this.Quantity} | Fee: {this.Fee} {this.FeeAsset}";
+    public override string ToString() => $"{this.Pair} | {this.Id} | {this.Price} | {this.Amount}";
 }

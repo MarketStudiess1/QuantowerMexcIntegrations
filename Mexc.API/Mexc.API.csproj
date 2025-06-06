@@ -21,8 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Refit" Version="7.1.2" />
-    <PackageReference Include="Refit.Newtonsoft.Json" Version="7.1.2" />
+    <PackageReference Include="Refit" Version="7.2.0" />
+    <PackageReference Include="Refit.Newtonsoft.Json" Version="7.2.0" />
     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>

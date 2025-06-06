@@ -1,17 +1,15 @@
-﻿using System;
-
-namespace Mexc.API.Models;
+﻿namespace Mexc.API.Models;
 
 /// <summary>
-/// Represents a market trade from MEXC API.
+/// Represents a trade from MEXC API.
 /// </summary>
 public class MexcTrade
 {
+    public string Pair { get; internal set; } // Trading pair, e.g., "BTCUSDT"
     public long Id { get; internal set; } // Trade ID
+    public long Time { get; internal set; } // Trade time in milliseconds
     public decimal Price { get; internal set; } // Trade price
-    public decimal Quantity { get; internal set; } // Trade quantity
-    public DateTimeOffset Time { get; internal set; } // Trade time
-    public bool IsBuyerMaker { get; internal set; } // True if buyer is the maker
+    public decimal Amount { get; internal set; } // Trade quantity (qty)
 
-    public override string ToString() => $"{this.Id} | {this.Time} | {this.Price} | {this.Quantity}";
+    public override string ToString() => $"{this.Pair} | {this.Id} | {this.Price} | {this.Amount}";
 }

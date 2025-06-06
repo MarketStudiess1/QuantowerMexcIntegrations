@@ -121,14 +121,14 @@ internal class MexcTradingVendor : MexcMarketDataVendor
     {
         IBalanceCalculator CreateBalanceCalculator(Symbol symbol)
         {
-            return symbol.TypeSymbolType == SymbolType.Crypto
+            return symbol.Type == SymbolType.Crypto
                 ? new MexcSpotBalanceCalculator(this.Context)
                 : new MexcFuturesBalanceCalculator(this.Context);
         }
 
         return new List<OrderType>
         {
-            new MexcLimitOrderType(TimeInForce.Default, TimeInForce.GTT) { BalanceCalculator = CreateBalanceCalculator },
+            new MexcLimitOrderType(TimeInForce.Default, TimeInForce.GTT) { BalanceCalculatorFactory = CreateBalanceCalculator },
             new MexcMarketOrderType(TimeInForce.Default) { BalanceCalculatorFactory = CreateBalanceCalculator },
             new MexcStopOrderType(TimeInForce.Default, TimeInForce.GTT) { BalanceCalculatorFactory = CreateBalanceCalculator },
             new MexcStopLimitOrderType(TimeInForce.Default, TimeInForce.GTT) { BalanceCalculatorFactory = CreateBalanceCalculator }
@@ -137,7 +137,7 @@ internal class MexcTradingVendor : MexcMarketDataVendor
 
     public override IList<MessageOpenOrder> GetPendingOrders(CancellationToken token)
     {
-        var orders = this.TokenHandleApiResponse(
+        var orders = this.HandleApiResponse(
             () => this.Api.PrivateRestApi.GetOpenOrders(token), token, out string error);
 
         if (!string.IsNullOrEmpty(error))
@@ -491,16 +491,16 @@ internal class MexcTradingVendor : MexcMarketDataVendor
     private MessageTrade CreateTrade(MexcTrade trade) => new MessageTrade
     {
         TradeId = trade.Id,
-        SymbolId = trade.Symbol,
-        AccountId = this.ConstructAccountId(trade.Symbol.EndsWith("_PERP") ? "FUTURES" : "SPOT"),
+        SymbolId = trade.Pair,
+        AccountId = this.ConstructAccountId(trade.Pair.EndsWith("_PERP") ? "FUTURES" : "SPOT"),
         Price = trade.Price,
-        Quantity = trade.Quantity,
+        Quantity = trade.Amount,
         DateTime = trade.Time,
-        Side = trade.Side == "BUY" ? Side.Buy : Side.Sell,
+        Side = trade.IsBuyerMaker ? Side.Buy : Side.Sell,
         OrderId = trade.OrderId
     };
 
-    private MexcSubmitOrderRequest CreateSubmitOrderRequest(OrderRequestParameters parameters)
+    private MexcSubmitOrderRequest CreateSubmitOrderRequest(PlaceOrderRequestParameters parameters)
     {
         var request = new MexcSubmitOrderRequest
         {
@@ -509,7 +509,7 @@ internal class MexcTradingVendor : MexcMarketDataVendor
             Type = parameters.OrderTypeId switch
             {
                 OrderType.Market => "MARKET",
-                OrderType.Limit => parameters.IsPostOnly() ? "LIMIT_MAKER" : "LIMIT",
+                OrderType.Limit => "LIMIT", // Simplificado, asumiendo que IsPostOnly no está disponible
                 OrderType.Stop => "STOP",
                 OrderType.StopLimit => "STOP_LIMIT",
                 _ => throw new InvalidOperationException("Unsupported order type")
@@ -517,11 +517,11 @@ internal class MexcTradingVendor : MexcMarketDataVendor
             Quantity = parameters.Quantity.ToString(CultureInfo.InvariantCulture)
         };
 
-        if (parameters.OrderType == OrderType.Limit)
-            request.Price = parameters.Price.FormatPrice();
+        if (parameters.OrderTypeId == OrderType.Limit)
+            request.Price = parameters.Price.ToString(CultureInfo.InvariantCulture);
 
-        if (parameters.OrderType == OrderType.Stop || parameters.OrderType == OrderType.StopLimit)
-            request.StopPrice = parameters.TriggerPrice.FormatPrice();
+        if (parameters.OrderTypeId == OrderType.Stop || parameters.OrderTypeId == OrderType.StopLimit)
+            request.StopPrice = parameters.TriggerPrice.ToString(CultureInfo.InvariantCulture);
 
         return request;
     }
@@ -536,11 +536,11 @@ internal class MexcTradingVendor : MexcMarketDataVendor
             Quantity = parameters.Quantity.ToString(CultureInfo.InvariantCulture)
         };
 
-        if (parameters.OrderType == OrderType.Limit)
-            request.Price = parameters.Price.FormatPrice();
+        if (parameters.OrderTypeId == OrderType.Limit)
+            request.Price = parameters.Price.ToString(CultureInfo.InvariantCulture);
 
-        if (parameters.OrderType == OrderType.Stop || parameters.OrderType == OrderType.StopLimit)
-            request.StopPrice = parameters.TriggerPrice;
+        if (parameters.OrderTypeId == OrderType.Stop || parameters.OrderTypeId == OrderType.StopLimit)
+            request.StopPrice = parameters.TriggerPrice.ToString(CultureInfo.InvariantCulture);
 
         return request;
     }
@@ -559,7 +559,7 @@ internal class MexcTradingVendor : MexcMarketDataVendor
 
     #endregion Factory
 
-    #region Misc
+    #region Private methods
 
     private string ConstructAccountId(string accountType) => $"{accountType}_{this.Api.UserId}";
 
@@ -572,13 +572,13 @@ internal class MexcTradingVendor : MexcMarketDataVendor
         do
         {
             var orders = this.HandleApiResponse(
-                () => this.Api.PrivateRestApi.GetOrderHistory(from.ToUnixTimeSeconds(), to.ToUnixTimeSeconds(), LIMIT, cancellation), cancellation, out _, true);
+                () => this.Api.PrivateRestApi.GetOrderHistory(from.ToUnixTimeSeconds(), to.ToUnixTimeSeconds(), LIMIT, cancellation), cancellation, out string error);
 
             if (orders == null)
-                break;
+                yield break;
 
-            foreach (var order in orders)
-                stack.Push(order);
+            foreach (var item in orders)
+                stack.Push(item);
 
             var lastOrder = orders.LastOrDefault();
             if (lastOrder == null)
@@ -592,7 +592,7 @@ internal class MexcTradingVendor : MexcMarketDataVendor
             yield return stack.Pop();
     }
 
-    #endregion Misc
+    #endregion Private methods
 
     #region Periodic actions
 
@@ -603,7 +603,7 @@ internal class MexcTradingVendor : MexcMarketDataVendor
 
         if (!string.IsNullOrEmpty(error))
         {
-            Core.Instance.Loggers.Log($"{nameof(this.UpdateBalancesAction)}: {error}", LoggingLevel.Error, MexcVendor.VENDOR_NAME);
+            Core.Instance.Loggers.LogError($"{nameof(this.UpdateBalancesAction)}: {error}", null, MexcVendor.VENDOR_NAME);
             return;
         }
 

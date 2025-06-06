@@ -1,8 +1,8 @@
 ﻿
+using System;
 using Mexc.API.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 
 namespace Mexc.API.JsonConverters;
 
@@ -14,14 +14,14 @@ internal class MexcUserTradeJsonConverter : JsonConverter<MexcUserTrade>
 
         var result = new MexcUserTrade
         {
-            Symbol = jObject["symbol"].Value<string>(),
+            Pair = jObject["symbol"].Value<string>(),
             Id = jObject["id"].Value<long>(),
             OrderId = jObject["orderId"].Value<string>(),
             Price = jObject["price"].Value<decimal>(),
-            Quantity = jObject["qty"].Value<decimal>(),
+            Amount = jObject["qty"].Value<decimal>(),
             Fee = jObject["commission"].Value<decimal>(),
-            FeeAsset = jObject["commissionAsset"].Value<string>(),
-            Time = DateTimeOffset.FromUnixTimeMilliseconds(jObject["time"].Value<long>()).UtcDateTime,
+            FeeCurrency = jObject["commissionAsset"].Value<string>(),
+            ExecutionTime = DateTimeOffset.FromUnixTimeMilliseconds(jObject["time"].Value<long>()),
             IsBuyer = jObject["isBuyer"].Value<bool>(),
             IsMaker = jObject["isMaker"].Value<bool>()
         };

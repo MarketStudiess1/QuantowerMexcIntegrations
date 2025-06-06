@@ -3,3 +3,16 @@ C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mex
 C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.AssemblyInfoInputs.cache
 C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.AssemblyInfo.cs
 C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.csproj.CoreCompileInputs.cache
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\Mexc.API.deps.json
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\Mexc.API.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\Mexc.API.pdb
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\Newtonsoft.Json.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\Refit.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\Refit.Newtonsoft.Json.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\SuperSocket.ClientEngine.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\bin\Debug\WebSocket4Net.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.csproj.Up2Date
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\refint\Mexc.API.dll
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.pdb
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\ref\Mexc.API.dll

@@ -223,7 +223,7 @@ internal class MexcMarketDataVendor : MexcInternalVendor
         long toUnix = new DateTimeOffset(parameters.ToTime).ToUnixTimeSeconds();
         var cancellation = parameters.TokenCancellationToken;
 
-        var itemsStack = new Stack<List<IHistoryItem>>> ();
+        var itemsStack = new Stack<List<IHistoryItem>>();
 
         switch (parameters.Aggregation)
         {
@@ -234,63 +234,65 @@ internal class MexcMarketDataVendor : MexcInternalVendor
                     while (fromUnix < currentToUnix)
                     {
                         var trades = this.HandleApiResponse(
-                            () => this.Api.PublicRestApiV3.GetRecentTrades(symbol, fromUnix, currentToUnix, cancellation), cancellation, out _, true, true);
+                            () => this.Api.PublicRestApiV3.GetRecentTrades(symbol, fromUnix, currentToUnix, cancellation),
+                            cancellation, out _, true, true);
 
                         if (trades == null || !trades.Any())
                             break;
 
                         var ticks = trades.Select(CreateHistoryItem).ToList();
-
                         itemsStack.Push(ticks);
 
-                        currentToUnix = trades.Last().TimeUnix - trades;
+                        currentToUnix = trades.Min(t => t.Time);
                     }
+                }
+                break;
 
-                    break;
-            case HistoryAggregationTime historyAggregationTime:
-                        {
-                            string interval = historyAggregationTime.Period.ToString();
-                            long currentToUnix = toUnix;
+            case HistoryAggregationTime when parameters.Aggregation is HistoryAggregationTime historyAggregationTime:
+                {
+                    string interval = historyAggregationTime.Period.ToString();
+                    long currentToUnix = toUnix;
 
-                            while (fromUnix < currentToUnix)
-                            {
-                                var candles = this.Api.PublicRestApiV3.GetKlines(symbol, interval, fromUnix, currentToUnix, cancellation);
+                    while (fromUnix < currentToUnix)
+                    {
+                        var candles = this.HandleApiResponse(
+                            () => this.Api.PublicRestApiV3.GetKlines(symbol, interval, fromUnix, currentToUnix, cancellation),
+                            cancellation, out _, true, true);
 
-                                if (candles == null || !candles.Any())
-                                    break;
-
-                                var bars = candles.Select(CreateHistoryItemBar).ToList();
-
-                                itemsStack.Push(bars);
-
-                                currentToUnix = candles.Last().CloseTime;
-                            }
-
+                        if (candles == null || !candles.Any())
                             break;
-                            default:
-                return result;
-                        }
 
-                        while (itemsStack.Any())
-                        {
-                            var items = itemsStack.Pop();
-                            for (int i = items.Count - 1; i >= 0; i--)
-                                result.Add(items[i]);
-                        }
+                        var bars = candles.Select(CreateHistoryItemBar).ToList();
+                        itemsStack.Push(bars);
 
-                        return result;
-
+                        currentToUnix = candles.Min(c => c.OpenTime);
                     }
+                }
+                break;
+
+            default:
+                return result;
+        }
+
+        while (itemsStack.Any())
+        {
+            var items = itemsStack.Pop();
+            for (int i = items.Count - 1; i >= 0; i--)
+                result.Add(items[i]);
+        }
+
+        return result;
+    }
 
     #endregion History
 
-                    #region Factory
+    #region Factory
 
-    private MessageAsset CreateMessageAsset(string assetId) => new MessageAsset
+    private MessageAsset CreateMessageAsset(string assetId) => new()
     {
         Id = assetId,
         Name = assetId,
-        MinimumChange = assetId == MexcVendor.USER_ASSET_ID ? 1e-2 : 1e-8
+        MinimumChange = string.Equals(assetId, MexcVendor.USER_ASSET_ID, StringComparison.Ordinal) ? 1e-2 : 1e-8
     };
 
     private MessageSymbol CreateMessageSymbol(MexcSymbolDetails symbolDetails, string baseAsset, string quoteAsset)
@@ -327,25 +329,25 @@ internal class MexcMarketDataVendor : MexcInternalVendor
         return message;
     }
 
-    private DayBar CreateDayBar(MexcTicker ticker) => new(ticker.Symbol, Core.InstanceTimeUtils.DateTimeUtcNow)
+    private DayBar CreateDayBar(MexcTicker ticker) => new(ticker.Pair, Core.InstanceTimeUtils.DateTimeUtcNow)
     {
         Change = (double)ticker.PriceChange,
         ChangePercentage = (double)ticker.PriceChangePercent,
-        High = (double)ticker.HighPrice,
+        High = (double)ticker.High,
         Low = (double)ticker.Low,
-        Volume = (double)ticker.ToDouble()Volume
+        Volume = (double)ticker.Volume
     };
 
     private Quote CreateQuote(MexcTicker ticker)
     {
         var dateTime = Core.InstanceTimeUtils.DateTimeUtcNow;
 
-        if (this.Context.LastTradeTimes.TryGetValue(ticker.Symbol, out long lastTradeTime) && dateTime.Ticks <= lastTradeTime)
+        if (this.Context.LastTradeTimes.TryGetValue(ticker.Pair, out long lastTradeTime) && dateTime.Ticks <= lastTradeTime)
             dateTime = new DateTime(lastTradeTime + 1, DateTimeKind.Utc);
 
-        this.Context.LastTradeTimes[ticker.Symbol] = dateTime.Ticks;
+        this.Context.LastTradeTimes[ticker.Pair] = dateTime.Ticks;
 
-        return new Quote(ticker.Symbol, (double)ticker.BidPrice, (double)ticker.BidQty, (double)ticker.AskPrice, (double)ticker.AskQty, dateTime);
+        return new Quote(ticker.Pair, (double)ticker.Bid, (double)ticker.BidSize, (double)ticker.Ask, (double)ticker.AskSize, dateTime);
     }
 
     private static DOMQuote CreateDomQuote(IReadOnlyCollection<MexcBookItem> bookItems)
@@ -383,12 +385,12 @@ internal class MexcMarketDataVendor : MexcInternalVendor
     {
         var dateTime = DateTimeOffset.FromUnixTimeSeconds((int)trade.Time).UtcDateTime;
 
-        if (this.Context.LastTradeTimes.TryGetValue(trade.Symbol, out long lastTradeTime) && dateTime.Ticks <= lastTradeTime)
+        if (this.Context.LastTradeTimes.TryGetValue(trade.Pair, out long lastTradeTime) && dateTime.Ticks <= lastTradeTime)
             dateTime = new DateTime(lastTradeTime + 1, DateTimeKind.Utc);
 
-        this.Context.LastTradeTimes[trade.Symbol] = dateTime.Ticks;
+        this.Context.LastTradeTimes[trade.Pair] = dateTime.Ticks;
 
-        return new Last(trade.Symbol, (double)trade.Price, (double)trade.Quantity, dateTime)
+        return new Last(trade.Pair, (double)trade.Price, (double)trade.Amount, dateTime)
         {
             TradeId = trade.Id.ToString(),
             AggressorFlag = trade.IsBuyerMaker ? AggressorFlag.Sell : AggressorFlag.Buy
@@ -399,7 +401,7 @@ internal class MexcMarketDataVendor : MexcInternalVendor
     {
         TicksLeft = DateTimeOffset.FromUnixTimeSeconds(trade.Time).UtcDateTime.Ticks,
         Price = (double)trade.Price,
-        Volume = (double)trade.Quantity
+        Volume = (double)trade.Amount
     };
 
     private static IHistoryItem CreateHistoryItemBar(MexcKline kline) => new HistoryItemBar

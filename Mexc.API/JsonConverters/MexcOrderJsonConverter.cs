@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using Mexc.API.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -22,7 +21,7 @@ internal class MexcOrderJsonConverter : JsonConverter<MexcOrder>
             Status = jObject["status"].ToString(),
             Type = jObject["type"].ToString(),
             Side = jObject["side"].ToString(),
-            Time = jObject["transactTime"].Value<long>()
+            Time = DateTimeOffset.FromUnixTimeMilliseconds(jObject["transactTime"].Value<long>())
         };
     }
 

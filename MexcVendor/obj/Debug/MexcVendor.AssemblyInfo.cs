@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MexcVendor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0c72cf6bb22015b680770df0bbd7daefa62ef0c5")]
 [assembly: System.Reflection.AssemblyProductAttribute("MexcVendor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MexcVendor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

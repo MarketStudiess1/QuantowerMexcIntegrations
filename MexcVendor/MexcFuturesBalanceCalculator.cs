@@ -1,11 +1,8 @@
-﻿using Microsoft.Xna.Framework;
-using System;
-
-using MexcVendor.Misc;
+﻿using System;
 using System.Collections.Generic;
-
-using Microsoft.Extensions;
 using System.Linq;
+using TradingPlatform.BusinessLayer;
+using MexcVendor.Misc;
 
 namespace TradingPlatform.Data;
 
@@ -53,5 +50,5 @@ public class MexcFuturesBalanceCalculator : LimitCalculator
         return balance.Free.ToDouble();
     }
 
-    protected override int? Get(int leverage) => this.leverageItem?.GetValue<int>()() ?? 1;
+    protected override int? Get(int leverage) => this.leverageItem?.GetValue<int>() ?? 1;
 }

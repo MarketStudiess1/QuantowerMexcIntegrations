@@ -33,7 +33,7 @@ public class MexcApi : IDisposable
             {
                 new MexcCandleJsonConverter(),
                 new MexcTickerJsonConverter(),
-                new MexcTradeJsonConverter()
+                new MexcUserTradeJsonConverter()
             }
         }));
 
