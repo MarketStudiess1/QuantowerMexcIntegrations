@@ -1,0 +1,5 @@
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.csproj.AssemblyReference.cache
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.AssemblyInfoInputs.cache
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.AssemblyInfo.cs
+C:\Users\juan\source\repos\MEXCConnection\MEXCIntegration\Mexc.API\obj\Debug\Mexc.API.csproj.CoreCompileInputs.cache
